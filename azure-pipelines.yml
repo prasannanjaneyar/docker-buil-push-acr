@@ -36,15 +36,15 @@ stages:
       inputs:
         containerRegistry: 'acr-svc'
         repository: 'myapp'
-        command: 'build'
+        command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
         addPipelineData: false
         addBaseImageData: false
 
-    # Push Docker image
-    - task: Docker@2
-      inputs:
-        containerRegistry: 'acr-svc'
-        repository: 'myapp'
-        command: 'push'
-        tags: '$(Build.BuildId):latest'
+    # # Push Docker image
+    # - task: Docker@2
+    #   inputs:
+    #     containerRegistry: 'acr-svc'
+    #     repository: 'myapp'
+    #     command: 'push'
+    #     tags: '$(Build.BuildId):latest'
