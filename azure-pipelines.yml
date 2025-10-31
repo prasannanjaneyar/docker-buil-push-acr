@@ -38,6 +38,8 @@ stages:
         repository: 'myapp'
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
+        tags: |
+                $(tag)
         addPipelineData: false
         addBaseImageData: false
 
