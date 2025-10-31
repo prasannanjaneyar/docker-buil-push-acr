@@ -1,0 +1,59 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  # Docker image name
+  imageName: myapp
+  # Docker image tag
+  tag: $(Build.BuildId)
+
+stages:
+- stage: BuildAndPush
+  displayName: Build and Push Docker Image
+  jobs:
+  - job: DockerBuildPush
+    displayName: Docker Build and Push
+    steps:
+
+    # Step 1: Checkout source code
+    - task: Checkout@1
+
+    # Step 2: Log in to Azure using service connection
+    - task: AzureCLI@2
+      name: ACRLogin
+      inputs:
+        azureSubscription: 'docker-build-acr'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          echo "Logging in to Azure..."
+          az acr login --name dockeracrpush   # Replace with your ACR name
+
+    # Step 3: Build Docker image
+    - task: Docker@2
+      displayName: Build Docker image
+      inputs:
+        containerRegistry: 'docker-hub-svc'
+        repository: 'myapp'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        tags: '$(tag)'
+
+    # Step 4: Push Docker image to ACR
+    - task: Docker@2
+      displayName: Push Docker image
+      inputs:
+        containerRegistry: 'docker-hub-svc'
+        repository: 'dockeracrpush'
+        command: 'push'
+        tags: '$(tag)'
