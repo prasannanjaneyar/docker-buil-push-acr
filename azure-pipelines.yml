@@ -1,8 +1,3 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
   branches:
     include:
@@ -12,10 +7,9 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  # Docker image name
   imageName: myapp
-  # Docker image tag
   tag: $(Build.BuildId)
+  acrName: dockeracrpush   # your ACR name
 
 stages:
 - stage: BuildAndPush
@@ -25,35 +19,24 @@ stages:
     displayName: Docker Build and Push
     steps:
 
-    # Step 1: Checkout source code
-    - task: Checkout@1
+    # Checkout repo
+    - checkout: self
 
-    # Step 2: Log in to Azure using service connection
+    # Log in to Azure (ARM service connection)
     - task: AzureCLI@2
-      name: ACRLogin
       inputs:
-        azureSubscription: 'docker-build-acr'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
+        azureSubscription: 'docker-build-acr'   # Azure RM service connection
+        scriptType: bash
+        scriptLocation: inlineScript
         inlineScript: |
-          echo "Logging in to Azure..."
-          az acr login --name dockeracrpush   # Replace with your ACR name
+          az acr login --name $(acrName)
 
-    # Step 3: Build Docker image
-    - task: Docker@2
-      displayName: Build Docker image
-      inputs:
-        containerRegistry: 'acr-svc'
-        repository: 'myapp'
-        command: 'build'
-        Dockerfile: '**/Dockerfile'
-        tags: '$(tag)'
+    # Build Docker image
+    - script: |
+        docker build -t $(acrName).azurecr.io/$(imageName):$(tag) .
+      displayName: Build Docker Image
 
-    # Step 4: Push Docker image to ACR
-    - task: Docker@2
-      displayName: Push Docker image
-      inputs:
-        containerRegistry: 'acr-svc'
-        repository: 'dockeracrpush'
-        command: 'push'
-        tags: '$(tag)'
+    # Push Docker image
+    - script: |
+        docker push $(acrName).azurecr.io/$(imageName):$(tag)
+      displayName: Push Docker Image
