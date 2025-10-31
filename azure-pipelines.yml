@@ -32,11 +32,18 @@ stages:
           az acr login --name $(acrName)
 
     # Build Docker image
-    - script: |
-        docker build -t $(acrName).azurecr.io/$(imageName):$(tag) .
-      displayName: Build Docker Image
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'acr-svc'
+        repository: 'myapp'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        addPipelineData: false
+        addBaseImageData: false
 
     # Push Docker image
-    - script: |
-        docker push $(acrName).azurecr.io/$(imageName):$(tag)
-      displayName: Push Docker Image
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'acr-svc'
+        repository: 'myapp'
+        command: 'push'
