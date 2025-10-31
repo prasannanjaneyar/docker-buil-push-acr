@@ -36,7 +36,7 @@ stages:
       inputs:
         containerRegistry: 'acr-svc'
         repository: 'myapp'
-        command: 'buildAndPush'
+        command: 'build'
         Dockerfile: '**/Dockerfile'
         addPipelineData: false
         addBaseImageData: false
