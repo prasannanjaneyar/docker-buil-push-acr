@@ -47,3 +47,4 @@ stages:
         containerRegistry: 'acr-svc'
         repository: 'myapp'
         command: 'push'
+        tags: '$(Build.BuildId):latest'
